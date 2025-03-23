@@ -1,6 +1,3 @@
-# transatron-backend
-Backend for Transatron
-
 # Tansatron Backend
 Backend for Tansatron, a web app to modernize Kerala's KSRTC public transport system.
 
