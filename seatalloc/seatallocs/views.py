@@ -1,8 +1,7 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .seat_allocation import find_longest_available_segment
-from .models import SeatAllocation, Seat
+from .seat_allocation import book_seat  # Import the centralized function
 
 @csrf_exempt
 def book_ticket_view(request):
@@ -17,25 +16,12 @@ def book_ticket_view(request):
             if not passenger_name or not start or not end:
                 return JsonResponse({"error": "Missing required fields"}, status=400)
 
-            # Find the longest available segment
-            segment = find_longest_available_segment(start, end)
+            # Call the central booking function
+            booking_message = book_seat(passenger_name, start, end)
 
-            if not segment:
-                return JsonResponse({"error": "No seats available for the selected route"}, status=400)
-
-            seat = segment[2]  # Extract the seat object
-
-            # Create the booking
-            new_booking = SeatAllocation.objects.create(
-                seat=seat,
-                start_stop=start,
-                end_stop=end
-            )
-
-            return JsonResponse({"message": f"Seat {seat.seat_number} booked from {start} to {end}"})
+            return JsonResponse({"message": booking_message})
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     return JsonResponse({"message": "Use POST to book a ticket"}, status=405)
-

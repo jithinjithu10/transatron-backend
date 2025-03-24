@@ -1,6 +1,6 @@
 from seatallocs.models import Seat, SeatAllocation, STOPS
 
-# Function 1: Get index of a stop
+# Function to get index of a stop
 def get_stop_index(stop_name):
     """Returns the index of the stop from STOPS."""
     for i, stop in enumerate(STOPS):
@@ -8,7 +8,7 @@ def get_stop_index(stop_name):
             return i
     return None
 
-# Function 2: Check if a seat is available for a given journey
+# Function to check seat availability
 def is_seat_available(seat, start, end):
     """Checks if a seat is available for the given start and end stops."""
     start_index = get_stop_index(start)
@@ -17,7 +17,6 @@ def is_seat_available(seat, start, end):
     if start_index is None or end_index is None:
         return False  # Invalid stop
 
-    # Check if seat is already booked on any conflicting segment
     bookings = SeatAllocation.objects.filter(seat=seat)
     for booking in bookings:
         booked_start_index = get_stop_index(booking.start_stop)
@@ -29,18 +28,18 @@ def is_seat_available(seat, start, end):
 
     return True  # Seat is available
 
-# Function 3: Find an available seat
+# Function to find an available seat
 def find_available_seat(start, end):
     """Finds the first available seat for the given journey."""
-    all_seats = Seat.objects.all().order_by("seat_number")  # Get seats in order
+    all_seats = Seat.objects.all().order_by("seat_number")
 
     for seat in all_seats:
-        if is_seat_available(seat, start, end):  # Ensure seat is free
+        if is_seat_available(seat, start, end):
             return seat  # Return the available seat
 
     return None  # No available seat
 
-# Function 4: Find the longest available segment if full ticket is unavailable
+# Function to find the longest available segment when a full ticket is unavailable
 def find_longest_available_segment(start, end):
     """Finds the longest segment that can be booked while ensuring optimal seat utilization."""
     start_index = get_stop_index(start)
@@ -52,8 +51,8 @@ def find_longest_available_segment(start, end):
     longest_segment = None
     longest_length = 0
 
-    # Forward search (only till end_index)
-    for i in range(start_index + 1, end_index + 1):  # Stops at end_index
+    # Forward search (towards the destination)
+    for i in range(start_index + 1, end_index + 1):
         seat = find_available_seat(start, STOPS[i][0])
         if seat:
             segment_length = i - start_index
@@ -61,8 +60,8 @@ def find_longest_available_segment(start, end):
                 longest_length = segment_length
                 longest_segment = (start, STOPS[i][0], seat)
 
-    # Backward search (only till start_index)
-    for i in range(end_index - 1, start_index - 1, -1):  # Stops at start_index
+    # Backward search (towards the origin)
+    for i in range(end_index - 1, start_index - 1, -1):
         seat = find_available_seat(STOPS[i][0], end)
         if seat:
             segment_length = end_index - i
@@ -72,7 +71,7 @@ def find_longest_available_segment(start, end):
 
     return longest_segment  # Returns (start, end, seat) if available
 
-# Function 5: Book a seat
+# Function to book a seat
 def book_seat(passenger_name, start, end):
     """Books a seat for a passenger if available."""
     
@@ -101,10 +100,6 @@ def book_seat(passenger_name, start, end):
             start_stop=partial_start,
             end_stop=partial_end
         )
-
-        # Debugging print statements
-        print(f"Requested: {start} -> {end}")
-        print(f"Allocated: {partial_start} -> {partial_end}")
 
         return f"Partial ticket booked: Seat {seat.seat_number} from {partial_start} to {partial_end}. Full journey ({start} to {end}) is not available."
     else:
