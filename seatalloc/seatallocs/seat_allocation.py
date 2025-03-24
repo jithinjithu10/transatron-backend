@@ -103,9 +103,6 @@ def book_seat(passenger_name, start, end):
         )
 
         # Debugging print statements
-        print(f"Requested: {start} -> {end}")
-        print(f"Allocated: {partial_start} -> {partial_end}")
-
-        return f"Partial ticket booked: Seat {seat.seat_number} from {partial_start} to {partial_end}. Full journey ({start} to {end}) is not available."
+        return f"Requested: {start} -> {end} Allocated: {partial_start} -> {partial_end} Partial ticket booked: Seat {seat.seat_number} from {partial_start} to {partial_end}. Full journey ({start} to {end}) is not available."
     else:
         return "No seats available"
